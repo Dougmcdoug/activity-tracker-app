@@ -1,0 +1,28 @@
+# Build artifacts
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE-specific
+.vs/
+.idea/
+
+# Dependency directories
+packages/
+
+# Logs and debug
+*.log
+*.tlog
+
+# Entity Framework
+Migrations/
+
+# Secrets (optional - do not hardcode secrets in source files!)
+appsettings.Development.json
+appsettings.Staging.json
+appsettings.Production.json

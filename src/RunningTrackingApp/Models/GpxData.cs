@@ -40,5 +40,11 @@ namespace RunningTrackingApp.Models
         public double Latitude { get; set; }
         public double Longitude { get; set; }
         public DateTime? TimeStamp { get; set; }
+
+        // Optional datapoints - null if not present
+        public double? Elevation { get; set; } = null;
+        public int? HeartRate { get; set; } = null;
+        public int? Power { get; set; } = null;
+        public int? Cadence { get; set; } = null;
     }
 }

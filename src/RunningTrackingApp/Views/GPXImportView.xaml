@@ -11,9 +11,11 @@
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition/>
+            <RowDefinition/>
         </Grid.RowDefinitions>
 
         <TextBlock Text="Welcome to the GPX Import View!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         <Button Content="Back to Home" Grid.Row="1" Command="{Binding NavigateToHomeCommand}"/>
+        <Button Content="Import GPX file" Grid.Row="2" Command="{Binding ImportCommand}"/>
     </Grid>
 </UserControl>

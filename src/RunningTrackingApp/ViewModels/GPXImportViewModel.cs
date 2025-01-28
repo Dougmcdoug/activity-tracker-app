@@ -47,7 +47,7 @@ namespace RunningTrackingApp.ViewModels
             if (dialog.ShowDialog() == true)
             {
                 var filePath = dialog.FileName;
-                _gpxParserService.ParseGpxFile(filePath);
+                GpxData = _gpxParserService.ParseGpxFile(filePath);
             }
         }
 

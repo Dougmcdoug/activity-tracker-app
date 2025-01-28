@@ -8,6 +8,9 @@ namespace RunningTrackingApp.Models
 {
     public class GpxData
     {
+
+        public string? Version { get; set; }
+        public string? Creator { get; set; }
         public List<Waypoint> Waypoints { get; set; } = new List<Waypoint>();
         public List<Track> Tracks { get; set; } = new List<Track>();
 
@@ -22,6 +25,8 @@ namespace RunningTrackingApp.Models
 
     public class Track
     {
+        public string ActivityType { get; set; }
+        public string ActivityName { get; set; }
         public List<TrackSegment> Segments { get; set; } = new List<TrackSegment>();
     }
 
@@ -34,6 +39,6 @@ namespace RunningTrackingApp.Models
     {
         public double Latitude { get; set; }
         public double Longitude { get; set; }
-        public DateTime TimeStamp { get; set; }
+        public DateTime? TimeStamp { get; set; }
     }
 }

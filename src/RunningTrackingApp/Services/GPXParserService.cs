@@ -58,6 +58,26 @@ namespace RunningTrackingApp.Services
         }
 
         /// <summary>
+        /// Flattens the GpxData object and retrieves all data points as a list of track points.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public List<TrackPoint> ExtractTrackPoints(GpxData data)
+        {
+            var points = new List<TrackPoint>();
+
+            // Iterate through elements of the GpxData to retrieve points
+            foreach (var track in data.Tracks)
+            {
+                foreach(var segment in track.Segments)
+                {
+                    points.AddRange(segment.Points);
+                }
+            }
+            return points;
+        }
+
+        /// <summary>
         /// Parses Track element for ActivityName, ActivityType and Segments.
         /// </summary>
         /// <param name="trackElement">Track element to parse.</param>

@@ -27,6 +27,29 @@ namespace RunningTrackerTests.GpxTests
 
         public string TempFilePath { get; private set; }
         public string DetailedFilePath { get; private set; }
+        public GpxData BasicData { get; private set; }
+        public GpxData DetailedData { get; private set; }
+
+        /// <summary>
+        /// Public static property holding the expected test results for the two points in the 'basic' file.
+        /// </summary>
+        public static List<object?[]> BasicFileTestDataPoints { get; } = new List<object?[]>
+        {
+            new object?[] { 0, 52.5200, 13.4050, new DateTime(2025, 1, 21, 12, 0, 0), null, null, null, null },
+            new object?[] {1, 52.5201, 13.4051, new DateTime(2025, 1, 21, 12, 1, 0), null, null, null, null }
+        };
+
+
+        /// <summary>
+        /// Public static property holding the expected test results for the two points in the 'basic' file.
+        /// </summary>
+        public static List<object?[]> DetailedFileTestDataPoints { get; } = new List<object?[]>
+        {
+            new object?[] { 0, 54.4463680, -1.0879010, new DateTime(2025, 1, 19, 10, 37, 45), 146.4, 90, 0, 0 },
+            new object?[] {1, 54.4463680, -1.0879010, new DateTime(2025, 1, 19, 10, 37, 46), 146.4, 91, 109, 0 },
+            new object?[] {2, 54.4463360, -1.0878880, new DateTime(2025, 1, 19, 10, 37, 47), 146.4, 91, 110, 80 }     
+        };
+
 
         /// <summary>
         /// Set up files for use in testing GPXParserService.
@@ -53,9 +76,20 @@ namespace RunningTrackerTests.GpxTests
     }
 
     /// <summary>
+    /// Collection definition ensures the fixture instance is shared across all required tests
+    /// </summary>
+    [CollectionDefinition("GPX Parser Service Tests")]
+    public class GPXParserCollection : ICollectionFixture<GPXParserServiceFixture>
+    {
+        // No code required here - xUnit handles the fixture lifecycle automatically
+    }
+
+
+    /// <summary>
     /// Verifies that GPXParserService correctly parses a valid GPX file
     /// and updates the GpxData property with the parsed result
     /// </summary>
+    [Collection("GPX Parser Service Tests")]
     public class GPXParserServiceTests : IClassFixture<GPXParserServiceFixture>
     {
         private readonly GPXParserServiceFixture _gpxParserServiceFixture;
@@ -68,6 +102,7 @@ namespace RunningTrackerTests.GpxTests
         {
             _gpxParserServiceFixture = gpxParserServiceFixture;
         }
+
 
         /// <summary>
         /// Tests that ParseGpxFile successfully parses a valid .gpx file
@@ -118,81 +153,56 @@ namespace RunningTrackerTests.GpxTests
         }
 
         /// <summary>
-        /// Tests that ParseGpxFile correctly parses a basic gpx file and correctly returns
-        /// the first two data points. Optional data should be null, because it is not
-        /// present in the 'basic' file.
+        /// Tests that ParseGpxFile parses the gpx file and correctly returns the metadata for the (index)'th point. 
+        /// Optional data should be null, because it is not present in the 'basic' file.
         /// </summary>
-        [Fact]
-        public void ParseGpxFile_ValidBasicFile_CheckCorrectGpxData()
+        [Theory]
+        [MemberData(nameof(_gpxParserServiceFixture.BasicFileTestDataPoints), MemberType = typeof(GPXParserServiceFixture))]
+        public void ParseGpxFile_ValidBasicFile_CheckCorrectGpxData(int index, double lat, double lon, DateTime timeStamp, double? elevation, int? heartRate, int? power, int? cadence)
         {
             // Arrange
             var gpxParserService = new GPXParserService();
 
             // Act
             var data = gpxParserService.ParseGpxFile(_gpxParserServiceFixture.TempFilePath);
-            var point1 = data.Tracks[0].Segments[0].Points[0];
-            var point2 = data.Tracks[0].Segments[0].Points[1];
+            var points = gpxParserService.ExtractTrackPoints(data); // obtain all points as a List<TrackPoint>
+            var point = points[index];
 
             // Assert
-            // Test the two datapoints, checking longitude, latitude and the timestamp
-            Assert.Equal(52.5200, point1.Latitude);
-            Assert.Equal(13.4050, point1.Longitude);
-            Assert.Equal(new DateTime(2025, 1, 21, 12, 0, 0), point1.TimeStamp);
-            Assert.Null(point1.Elevation);
-            Assert.Null(point1.HeartRate);
-            Assert.Null(point1.Power);
-            Assert.Null(point1.Cadence);
-
-            Assert.Equal(52.5201, point2.Latitude);
-            Assert.Equal(13.4051, point2.Longitude);
-            Assert.Equal(new DateTime(2025, 1, 21, 12, 1, 0), point2.TimeStamp);
-            Assert.Null(point2.Elevation);
-            Assert.Null(point2.HeartRate);
-            Assert.Null(point2.Power);
-            Assert.Null(point2.Cadence);
+            Assert.Equal(lat, point.Latitude);
+            Assert.Equal(lon, point.Longitude);
+            Assert.Equal(timeStamp, point.TimeStamp);
+            Assert.Equal(elevation, point.Elevation);
+            Assert.Equal(heartRate, point.HeartRate);
+            Assert.Equal(power, point.Power);
+            Assert.Equal(cadence, point.Cadence);
         }
 
         /// <summary>
         /// Tests that ParseGpxFile correctly parses a real .GPX file and correctly returns the
         /// first three data points. All values should be non-null since they are all present in the file.
         /// </summary>
-        [Fact]
-        public void ParseGpxFile_ValidRealFile_CheckCorrectGpxData()
+        [Theory]
+        [MemberData(nameof(GPXParserServiceFixture.DetailedFileTestDataPoints), MemberType =typeof(GPXParserServiceFixture))]
+        public void ParseGpxFile_ValidRealFile_CheckCorrectGpxData(int index, double lat, double lon, DateTime timeStamp, double? elevation, int? heartRate, int? power, int? cadence)
         {
             // Arrange
             var gpxParserService = new GPXParserService();
 
             // Act
+            // Note: some of this could be moved into the fixture class, to prevent repeated execution of the next two lines
             var data = gpxParserService.ParseGpxFile(_gpxParserServiceFixture.DetailedFilePath);
-            var point1 = data.Tracks[0].Segments[0].Points[0];
-            var point2 = data.Tracks[0].Segments[0].Points[1];
-            var point3 = data.Tracks[0].Segments[0].Points[2];
+            var points = gpxParserService.ExtractTrackPoints(data); // obtain all points as a List<TrackPoint>
+            var point = points[index];
 
             // Assert
-            // Test the first three datapoints, checking all 
-            Assert.Equal(54.4463680, point1.Latitude);
-            Assert.Equal(-1.0879010, point1.Longitude);
-            Assert.Equal(new DateTime(2025, 1, 19, 10, 37, 45), point1.TimeStamp);
-            Assert.Equal(146.4, point1.Elevation);
-            Assert.Equal(90, point1.HeartRate);
-            Assert.Equal(0, point1.Power);
-            Assert.Equal(0, point1.Cadence);
-
-            Assert.Equal(54.4463680, point2.Latitude);
-            Assert.Equal(-1.0879010, point2.Longitude);
-            Assert.Equal(new DateTime(2025, 1, 19, 10, 37, 46), point2.TimeStamp);
-            Assert.Equal(146.4, point2.Elevation);
-            Assert.Equal(91, point2.HeartRate);
-            Assert.Equal(109, point2.Power);
-            Assert.Equal(0, point2.Cadence);
-
-            Assert.Equal(54.4463360, point3.Latitude);
-            Assert.Equal(-1.0878880, point3.Longitude);
-            Assert.Equal(new DateTime(2025, 1, 19, 10, 37, 47), point3.TimeStamp);
-            Assert.Equal(146.4, point3.Elevation);
-            Assert.Equal(91, point3.HeartRate);
-            Assert.Equal(110, point3.Power);
-            Assert.Equal(80, point3.Cadence);
+            Assert.Equal(lat, point.Latitude);
+            Assert.Equal(lon, point.Longitude);
+            Assert.Equal(timeStamp, point.TimeStamp);
+            Assert.Equal(elevation, point.Elevation);
+            Assert.Equal(heartRate, point.HeartRate);
+            Assert.Equal(power, point.Power);
+            Assert.Equal(cadence, point.Cadence);
         }
     }
 }

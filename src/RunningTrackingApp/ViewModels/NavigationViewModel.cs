@@ -19,6 +19,7 @@ namespace RunningTrackingApp.ViewModels
 
         public ICommand NavigateToImportCommand { get; }
         public ICommand NavigateToHomeCommand { get; }
+        public ICommand NavigateToMapCommand { get; }
 
         public NavigationViewModel(NavigationService navigationService)
         {
@@ -27,6 +28,7 @@ namespace RunningTrackingApp.ViewModels
             // Example command for navigation
             NavigateToImportCommand = new RelayCommand(() => _navigationService.NavigateTo<GPXImportViewModel>());
             NavigateToHomeCommand = new RelayCommand(() => _navigationService.NavigateTo<HomeViewModel>());
+            NavigateToMapCommand = new RelayCommand(() => _navigationService.NavigateTo<GPSTraceViewModel>());
 
 
             // Listen for navigation changes

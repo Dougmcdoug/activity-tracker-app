@@ -46,6 +46,7 @@ namespace RunningTrackingApp
             serviceCollection.AddSingleton<NavigationViewModel>();
             serviceCollection.AddTransient<GPXImportViewModel>(); 
             serviceCollection.AddTransient<HomeViewModel>();
+            serviceCollection.AddTransient<GPSTraceViewModel>();
         }
     }
 

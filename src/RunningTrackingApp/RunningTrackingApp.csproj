@@ -13,6 +13,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Mapsui" Version="4.1.8" />
+    <PackageReference Include="Mapsui.Wpf" Version="4.1.8" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
   </ItemGroup>
 

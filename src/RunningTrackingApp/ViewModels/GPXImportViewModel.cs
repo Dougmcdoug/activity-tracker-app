@@ -28,8 +28,6 @@ namespace RunningTrackingApp.ViewModels
 
         private GPXParserService _gpxParserService;
 
-        
-
         public GPXImportViewModel(NavigationViewModel navigationViewModel, GPXParserService gpxParserService)
         {
             NavigateToHomeCommand = navigationViewModel.NavigateToHomeCommand;
@@ -55,9 +53,9 @@ namespace RunningTrackingApp.ViewModels
             if (dialog.ShowDialog() == true)
             {
                 var filePath = dialog.FileName;
-                GpxData = _gpxParserService.ParseGpxFile(filePath);
+                //GpxData = _gpxParserService.ParseGpxFile(filePath);
 
-                NavigateToMapCommand.Execute(GpxData);
+                NavigateToMapCommand.Execute(filePath);
             }
         }
 

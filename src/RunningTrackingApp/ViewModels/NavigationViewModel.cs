@@ -28,7 +28,9 @@ namespace RunningTrackingApp.ViewModels
             // Example command for navigation
             NavigateToImportCommand = new RelayCommand(() => _navigationService.NavigateTo<GPXImportViewModel>());
             NavigateToHomeCommand = new RelayCommand(() => _navigationService.NavigateTo<HomeViewModel>());
-            NavigateToMapCommand = new RelayCommand(() => _navigationService.NavigateTo<GPSTraceViewModel>());
+
+            // Define the NavigateToMapCommand in a way that lets us pass the filepath in as a parameter by using the generic RelayCommand<T>
+            NavigateToMapCommand = new RelayCommand<string>((path) => _navigationService.NavigateTo<GPSTraceViewModel>(path)); 
 
 
             // Listen for navigation changes

@@ -10,6 +10,7 @@ namespace RunningTrackingApp.Interfaces
     public interface INavigationService
     {
         void NavigateTo<TViewModel>() where TViewModel : ViewModelBase;
+        void NavigateTo<TViewModel>(object parameter) where TViewModel : ViewModelBase;
         ViewModelBase CurrentViewModel { get; }
     }
 }

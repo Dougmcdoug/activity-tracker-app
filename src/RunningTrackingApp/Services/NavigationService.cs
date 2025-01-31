@@ -38,11 +38,24 @@ namespace RunningTrackingApp.Services
 
         public void NavigateTo<TViewModel>() where TViewModel : ViewModelBase
         {
+            NavigateTo<TViewModel>(null);
+        }
+
+        public void NavigateTo<TViewModel>(object parameter = null) where TViewModel : ViewModelBase
+        {
             var viewModel = _serviceProvider.GetRequiredService<TViewModel>();
+
+            // If the ViewModel is able to receiver a parameter, then retrieve it
+            if (viewModel is IParameterReceiver receiver)
+            {
+                receiver.ReceiveParameter(parameter);
+            }
+
             if (viewModel is INavigable navigable)
             {
                 navigable.OnNavigatedTo();
             }
+
             CurrentViewModel = viewModel;
         }
 

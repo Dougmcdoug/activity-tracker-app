@@ -45,11 +45,17 @@ namespace RunningTrackingApp.Services
         {
             var viewModel = _serviceProvider.GetRequiredService<TViewModel>();
 
+            if (viewModel is GPSTraceViewModel traceViewModel)
+            {
+                traceViewModel.Initialise((string)parameter);
+            }
+
             // If the ViewModel is able to receiver a parameter, then retrieve it
+            /*
             if (viewModel is IParameterReceiver receiver)
             {
                 receiver.ReceiveParameter(parameter);
-            }
+            }*/
 
             if (viewModel is INavigable navigable)
             {

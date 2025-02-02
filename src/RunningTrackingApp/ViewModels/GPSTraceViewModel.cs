@@ -15,22 +15,21 @@ using RunningTrackingApp.Models;
 using RunningTrackingApp.Services;
 using Mapsui.Nts;
 using Mapsui.UI.Wpf;
+using Mapsui.Projections;
 
 namespace RunningTrackingApp.ViewModels
 {
-    public class GPSTraceViewModel : ViewModelBase, IParameterReceiver
+    public class GPSTraceViewModel : ViewModelBase
     {
         public string FilePath { get; private set; }
         private GPXParserService _parserService;
         private List<TrackPoint> _points;
 
         private MapControl _control;
-
-        private Map _map;
-        public Map Map
+        public MapControl Control
         {
-            get { return _map; }
-            set { SetProperty(ref _map, value); }
+            get { return _control; }
+            set { SetProperty(ref _control, value); }
         }
 
         private GpxData _gpxData;
@@ -40,30 +39,69 @@ namespace RunningTrackingApp.ViewModels
             set { SetProperty(ref _gpxData, value); }
         }
 
+        /// <summary>
+        /// ViewModel contructor. Loads the map so it can be displayed.
+        /// </summary>
+        /// <param name="parserService"></param>
         public GPSTraceViewModel(GPXParserService parserService)
         {
-            LoadMap();
-            _parserService = parserService;
+            _parserService = parserService; 
         }
 
+        /// <summary>
+        /// Because we are using Dependency Injection, it isn't straightforward to pass in the
+        /// filepath parameter. While it is possible, it is simpler to pass in the filepath as a parameter
+        /// to a separate initialising method that should be called after the constructor.
+        /// </summary>
+        /// <param name="filePath"></param>
+        public void Initialise(string filePath)
+        {
+            // Initialise map control
+            Control = new MapControl();
+
+            // Load the map
+            LoadMap();
+
+            // Import the gpx data from the selected file and overlay it on the map
+            LoadGPXTrack(filePath);
+        }
+
+        /// <summary>
+        /// Load map and store as the Map property on Control
+        /// </summary>
         private void LoadMap()
         {
+            // Create tile layer
             var tileLayer = new TileLayer(KnownTileSources.Create());
+
+            // Initialise map
             var map = new Map();
+
+            // Add tile layer
             map.Layers.Add(tileLayer);
-            Map = map;
+
+            Control.Map = map;
         }
 
+        /// <summary>
+        /// Load the gpx file using the parser service and update the map with the gps trace
+        /// </summary>
+        /// <param name="filePath">Absolute filepath to a valid .gpx file.</param>
         public void LoadGPXTrack(string filePath)
         {
             // Load GPS points
             GPXData = _parserService.ParseGpxFile(filePath);
+
+            // 'Flatten' the gps points into a list
             _points = _parserService.ExtractTrackPoints(GPXData);
 
             // Update the map with the new GPS track
             UpdateGpsLayer();
         }
 
+        /// <summary>
+        /// Create a LineString from the gps points and overlay on to the map.
+        /// </summary>
         private void UpdateGpsLayer()
         {
             // If we have no GPS trace to plot, then just return - having done nothing
@@ -72,6 +110,39 @@ namespace RunningTrackingApp.ViewModels
             // Convert GPS points to a MapsUI LineString
             var lineString = CreateLineString(_points);
 
+            // Display trace
+            DisplayGpsTrace(lineString);
+        }
+
+
+        /// <summary>
+        /// Create a LineString object from an input list of TrackPoints. The list must be 'flattened'.
+        /// </summary>
+        /// <param name="points">A 'flattened' list of gps points.</param>
+        /// <returns></returns>
+        private LineString CreateLineString(List<TrackPoint> points)
+        {
+            // Convert the list of TrackPoints to a coordinate
+            // Note that Mapsui expects coordinates in EPSG:3857 (Spherical Mercator projection coordinate system).
+            // Gpx files provide data points in EPSG:4326 (longitude/latitude coordinates).
+            // We can use the SphericalMercator class to convert between them.
+            var coordinates = points.Select(p =>
+            {
+                var projected = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
+                return new Coordinate(projected.x, projected.y);
+            }).ToArray();
+
+
+            // Return a new Linestring constructed from the projected coordinates.
+            return new LineString(coordinates);
+        }
+
+        /// <summary>
+        /// Create the gps trace on the map and refresh to display.
+        /// </summary>
+        /// <param name="lineString">A LineString representing the gps trace to plot.</param>
+        public void DisplayGpsTrace(LineString lineString)
+        {
             // Create a feature and set its geometry
             var feature = new GeometryFeature { Geometry = lineString };
 
@@ -88,7 +159,6 @@ namespace RunningTrackingApp.ViewModels
             feature.Styles.Add(vectorStyle);
 
             // Create a layer to hold the line
-            //var memoryProvider = new MemoryProvider(new[] {feature});
             var lineLayer = new MemoryLayer("GPX Track")
             {
                 Style = vectorStyle,
@@ -96,28 +166,10 @@ namespace RunningTrackingApp.ViewModels
             };
 
             // Add to map
-            
-        }
+            Control.Map.Layers.Add(lineLayer);
 
-
-        /// <summary>
-        /// Create a LineString object from an input list of TrackPoints. The list must be 'flattened'.
-        /// </summary>
-        /// <param name="points"></param>
-        /// <returns></returns>
-        private LineString CreateLineString(List<TrackPoint> points)
-        {
-            var coordinates = points.Select((TrackPoint p) => new Coordinate(p.Longitude, p.Latitude)).ToArray();
-            return new LineString(coordinates);
-        }
-
-
-        public void ReceiveParameter(object parameter)
-        {
-            if (parameter is string filepath)
-            {
-                FilePath = filepath;
-            }
+            // Refresh to update the map
+            Control.Refresh();
         }
     }
 }

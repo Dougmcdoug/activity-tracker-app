@@ -180,7 +180,7 @@ namespace RunningTrackerTests.GpxTests
 
         /// <summary>
         /// Tests that ParseGpxFile correctly parses a real .GPX file and correctly returns the
-        /// first three data points. All values should be non-null since they are all present in the file.
+        /// datapoint specified by index. All values should be non-null since they are all present in the file.
         /// </summary>
         [Theory]
         [MemberData(nameof(GPXParserServiceFixture.DetailedFileTestDataPoints), MemberType =typeof(GPXParserServiceFixture))]

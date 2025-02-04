@@ -20,7 +20,7 @@ using System.Diagnostics;
 
 namespace RunningTrackingApp.ViewModels
 {
-    public class GPSTraceViewModel : ViewModelBase
+    public class GPSTraceViewModel : ViewModelBase, INavigable
     {
         public string FilePath { get; private set; }
         private GPXParserService _parserService;
@@ -55,22 +55,27 @@ namespace RunningTrackingApp.ViewModels
             Map = _mapService.Map;
         }
 
-        /// <summary>
-        /// Because we are using Dependency Injection, it isn't straightforward to pass in the
-        /// filepath parameter. While it is possible, it is simpler to pass in the filepath as a parameter
-        /// to a separate initialising method that should be called after the constructor.
-        /// </summary>
-        /// <param name="filePath"></param>
-        public void Initialise(string filePath)
+
+        public void OnNavigatedTo(object parameter = null)
         {
-            // Load the map
-            _mapService.LoadMap();
+            if (parameter is string filePath)
+            {
+                // Load the map
+                _mapService.LoadMap();
 
-            // Import the gpx data from the selected file and overlay it on the map
-            LoadGPXTrack(filePath);
+                try
+                {
+                    // Import the gpx data from the selected file and overlay it on the map
+                    LoadGPXTrack(filePath);
 
-            // Zoom map on the gps trace
-            FocusMapOnTrace();
+                    // Zoom map on the gps trace
+                    FocusMapOnTrace();
+                }
+                catch (ArgumentException ex)
+                {
+                    // Ignore exception, map will proceed to draw map without gps trace
+                }
+            }
         }
 
 

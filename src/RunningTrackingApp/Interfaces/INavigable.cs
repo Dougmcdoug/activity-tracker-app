@@ -8,6 +8,6 @@ namespace RunningTrackingApp.Interfaces
 {
     public interface INavigable
     {
-        void OnNavigatedTo();
+        void OnNavigatedTo(object parameter);
     }
 }

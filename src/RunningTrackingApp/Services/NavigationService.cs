@@ -60,22 +60,10 @@ namespace RunningTrackingApp.Services
         {
             var viewModel = _serviceProvider.GetRequiredService<TViewModel>();
 
-            if (viewModel is GPSTraceViewModel traceViewModel)
-            {
-                traceViewModel.Initialise((string)parameter);
-            }
-
-            // If the ViewModel is able to receiver a parameter, then retrieve it
-            /*
-            if (viewModel is IParameterReceiver receiver)
-            {
-                receiver.ReceiveParameter(parameter);
-            }*/
-
-            // Should refactor this to handle passing in parameters, rather than the Initialise() call above.
+            // If the ViewModel implements INavigable, then call OnNavigatedTo to pass in a parameter and perform initialisations.
             if (viewModel is INavigable navigable)
             {
-                navigable.OnNavigatedTo();
+                navigable.OnNavigatedTo(parameter);
             }
 
             CurrentViewModel = viewModel;

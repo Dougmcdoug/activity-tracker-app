@@ -8,12 +8,13 @@ using System.Windows.Input;
 using System.Xml.Linq;
 using Microsoft.Win32;
 using RunningTrackingApp.Commands;
+using RunningTrackingApp.Interfaces;
 using RunningTrackingApp.Models;
 using RunningTrackingApp.Services;
 
 namespace RunningTrackingApp.ViewModels
 {
-    public class GPXImportViewModel : ViewModelBase
+    public class GPXImportViewModel : ViewModelBase, INavigable
     {
         public ICommand NavigateToHomeCommand { get; }
         public ICommand NavigateToMapCommand { get; }
@@ -28,6 +29,12 @@ namespace RunningTrackingApp.ViewModels
 
         private GPXParserService _gpxParserService;
 
+
+        /// <summary>
+        /// View Model constructor. Takes ViewModels (via Dependency Injection) and initialises ICommands.
+        /// </summary>
+        /// <param name="navigationViewModel"></param>
+        /// <param name="gpxParserService"></param>
         public GPXImportViewModel(NavigationViewModel navigationViewModel, GPXParserService gpxParserService)
         {
             NavigateToHomeCommand = navigationViewModel.NavigateToHomeCommand;
@@ -35,6 +42,16 @@ namespace RunningTrackingApp.ViewModels
             ImportCommand = new RelayCommand(ImportGpxFile);
             _gpxParserService = gpxParserService;
         }
+
+
+        /// <summary>
+        /// Initialiation code using input parameters.
+        /// </summary>
+        /// <param name="parameter"></param>
+        public void OnNavigatedTo(object parameter = null)
+        {
+        }
+
 
         /// <summary>
         /// Displays a dialog box for the user to select a .gpx file to import. The data is then

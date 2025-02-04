@@ -19,8 +19,6 @@ namespace RunningTrackingApp.Services
 {
     public class MapService
     {
-        private MapControl _control = new MapControl();
-
         public Map Map { get; private set; }
 
         public MapService()
@@ -126,6 +124,7 @@ namespace RunningTrackingApp.Services
             Map.Layers.Add(lineLayer);
         }
 
+
         /// <summary>
         /// Centre the map on a point centre with the zoom set by the resolution.
         /// </summary>
@@ -134,12 +133,11 @@ namespace RunningTrackingApp.Services
         public void FocusOnPoint(MPoint centre, double resolution)
         {
             // Clamp the resolution if it lies outside the allowable range
-            //var clampedResolution = Math.Clamp(resolution, Control.Map.Navigator.ZoomBounds.Min, Control.Map.Navigator.ZoomBounds.Max);
             var clampedResolution = Math.Clamp(resolution, Map.Navigator.ZoomBounds.Min, Map.Navigator.ZoomBounds.Max);
 
             // Focus the map view on this point
             // Delay is required to ensure that the map has loaded before attempting to zoom
-            Task.Delay(300).ContinueWith(_ =>
+            Task.Delay(400).ContinueWith(_ =>
             {
                 //_control.Map.Navigator.CenterOnAndZoomTo(centre, clampedResolution);
                 Map.Navigator.CenterOnAndZoomTo(centre, clampedResolution);

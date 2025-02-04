@@ -39,8 +39,10 @@ namespace RunningTrackingApp
         private void ConfigureServices(IServiceCollection serviceCollection)
         {
             // Register Services
+            // Note I've defined MapService as Transient because it will hold 
             serviceCollection.AddSingleton<GPXParserService>();
             serviceCollection.AddSingleton<NavigationService>();
+            serviceCollection.AddSingleton<MapService>();
 
             // Register ViewModels
             serviceCollection.AddSingleton<NavigationViewModel>();

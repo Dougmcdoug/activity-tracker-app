@@ -16,6 +16,7 @@ using RunningTrackingApp.Services;
 using Mapsui.Nts;
 using Mapsui.UI.Wpf;
 using Mapsui.Projections;
+using System.Diagnostics;
 
 namespace RunningTrackingApp.ViewModels
 {
@@ -24,6 +25,7 @@ namespace RunningTrackingApp.ViewModels
         public string FilePath { get; private set; }
         private GPXParserService _parserService;
         private List<TrackPoint> _points;
+        private Coordinate[] _coordinates;
 
         private MapControl _control;
         public MapControl Control
@@ -64,6 +66,9 @@ namespace RunningTrackingApp.ViewModels
 
             // Import the gpx data from the selected file and overlay it on the map
             LoadGPXTrack(filePath);
+
+            // Zoom map on the gps trace
+            FocusMapOnTrace();
         }
 
         /// <summary>
@@ -126,7 +131,7 @@ namespace RunningTrackingApp.ViewModels
             // Note that Mapsui expects coordinates in EPSG:3857 (Spherical Mercator projection coordinate system).
             // Gpx files provide data points in EPSG:4326 (longitude/latitude coordinates).
             // We can use the SphericalMercator class to convert between them.
-            var coordinates = points.Select(p =>
+            _coordinates = _points.Select(p =>
             {
                 var projected = SphericalMercator.FromLonLat(p.Longitude, p.Latitude);
                 return new Coordinate(projected.x, projected.y);
@@ -134,7 +139,7 @@ namespace RunningTrackingApp.ViewModels
 
 
             // Return a new Linestring constructed from the projected coordinates.
-            return new LineString(coordinates);
+            return new LineString(_coordinates);
         }
 
         /// <summary>
@@ -170,6 +175,40 @@ namespace RunningTrackingApp.ViewModels
 
             // Refresh to update the map
             Control.Refresh();
+        }
+
+        /// <summary>
+        /// Centres and focuses the map on the plotted GPS trace
+        /// </summary>
+        private void FocusMapOnTrace()
+        {
+            // Find the extreme x and y values
+            var minX = _coordinates.Min(p => p.X);
+            var minY = _coordinates.Min(p => p.Y); 
+            var maxX = _coordinates.Max(p => p.X);
+            var maxY = _coordinates.Max(p => p.Y);
+
+            // Calculate the midpoint to focus on
+            var center = new MPoint(minX + (maxX - minX) / 2, minY + (maxY - minY) / 2);
+
+            // Calculate span
+            var spanX = maxX - minX;
+            var spanY = maxY - minY;
+            var maxSpan = Math.Max(spanX, spanY);
+
+            // Calculate the zoom level
+            // The Log2() is used because a larger span means we need a smaller resolution level.
+            // The hardcoded correction is an empirically determined correction that produces a good zoom.
+            double zoomCorrection = 25; // "Magic" value that produces a good zoom level
+            double resolution = maxSpan > 0 ? Math.Log2(360 / maxSpan) + zoomCorrection : 10;
+            var clampedResolution = Math.Clamp(resolution, Control.Map.Navigator.ZoomBounds.Min, Control.Map.Navigator.ZoomBounds.Max);
+
+            // Focus the map view on this point
+            // Delay is required to ensure that the map has loaded before attempting to zoom
+            Task.Delay(300).ContinueWith(_ =>
+            {
+                Control.Map.Navigator.CenterOnAndZoomTo(center, clampedResolution);
+            });
         }
     }
 }

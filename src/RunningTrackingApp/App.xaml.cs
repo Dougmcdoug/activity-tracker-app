@@ -13,12 +13,13 @@ namespace RunningTrackingApp
     /// </summary>
     public partial class App : Application
     {
-        public static IServiceProvider ServiceProvider { get; private set; }
-
+        /// <summary>
+        /// Override OnStartup method. 
+        /// Configure the Dependency Injection, set data context to the NavigationService and navigate to the HomeViewModel.
+        /// </summary>
+        /// <param name="e"></param>
         protected override void OnStartup(StartupEventArgs e)
         {
-            //base.OnStartup(e);
-
             // Configure Dependency Injection
             var serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
@@ -36,11 +37,17 @@ namespace RunningTrackingApp
             mainWindow.Show();
         }
 
+
+        /// <summary>
+        /// Configure the service collection for Dependency Injection.
+        /// </summary>
+        /// <param name="serviceCollection"></param>
         private void ConfigureServices(IServiceCollection serviceCollection)
         {
             // Register Services
-            // Note I've defined MapService as Transient because it will hold 
+            // Note all services are Singleton since good practice is for them to not hold state (where possible)
             serviceCollection.AddSingleton<GPXParserService>();
+            serviceCollection.AddSingleton<GPXProcessorService>();
             serviceCollection.AddSingleton<NavigationService>();
             serviceCollection.AddSingleton<MapService>();
 
@@ -51,5 +58,4 @@ namespace RunningTrackingApp
             serviceCollection.AddTransient<GPSTraceViewModel>();
         }
     }
-
 }

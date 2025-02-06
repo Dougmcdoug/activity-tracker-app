@@ -42,6 +42,59 @@ namespace RunningTrackingApp.Services
             return totalDistance;
         }
 
+
+        private List<double> GetElevation(List<TrackPoint> points)
+        {
+            // Check that elevation is not null
+            List<double> elevation = points.
+                Select(p => p.Elevation ?? throw new ArgumentNullException("Elevation value is null."))
+                .ToList();
+
+            return elevation;
+        }
+
+
+        public double CalculateTotalElevation(List<TrackPoint> points)
+        {
+            // Perform smoothing?
+            var smoothedPoints = new List<TrackPoint>();
+            var kalman = new KalmanFilter3D(points[0].Latitude, points[0].Longitude, (double)points[0].Elevation);
+            foreach (var point in points)
+            {
+                kalman.Update(point.Latitude, point.Longitude, (double)point.Elevation);
+                var smoothed = kalman.GetState();
+                smoothedPoints.Add(new TrackPoint { Longitude = smoothed.x, Latitude = smoothed.y, Elevation = smoothed.z });
+
+            }
+
+            var elevations = GetElevation(smoothedPoints);
+
+            // Iterate through points to determine elevation
+            double totalElevationGain = 0;
+            double totalElevationLoss = 0;
+            for (int i = 0; i < smoothedPoints.Count - 1; i++)
+            {
+                var elevationChange = (double)smoothedPoints[i + 1].Elevation - (double)smoothedPoints[i].Elevation;
+                if (elevationChange >= 0)
+                {
+                    totalElevationGain += elevationChange;
+                }
+                else
+                {
+                    totalElevationLoss -= elevationChange;
+                }
+
+            }
+            /*
+            foreach (var pt in smoothedPoints)
+            {
+                totalElevation += (double)pt.Elevation;
+            }*/
+
+
+            return totalElevationGain;
+        }
+
         
     }
 

@@ -15,6 +15,7 @@
   <ItemGroup>
     <PackageReference Include="Mapsui" Version="4.1.8" />
     <PackageReference Include="Mapsui.Wpf" Version="4.1.8" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.1" />
   </ItemGroup>
 

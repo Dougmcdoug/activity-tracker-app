@@ -11,6 +11,8 @@ namespace RunningTrackingApp.Helpers
 {
     /// <summary>
     /// Implement the 3D Kalman filter using a constant acceleration model.
+    /// This is an adaptation of the code found here: https://www.emgu.com/wiki/index.php/Kalman_Filter 
+    /// extended to 3 dimensions and non-constant velocity.
     /// </summary>
     public class KalmanFilter3D
     {
@@ -60,7 +62,7 @@ namespace RunningTrackingApp.Helpers
             processNoise = DenseMatrix.CreateIdentity(9) * 0.01;
 
             // Measurement noise (lon/lat error ~5-10m, altitude is often worse)
-            measurementNoise = DenseMatrix.CreateIdentity(3) * 10;
+            measurementNoise = DenseMatrix.OfDiagonalArray(new double[] {5, 5, 20});
         }
 
 

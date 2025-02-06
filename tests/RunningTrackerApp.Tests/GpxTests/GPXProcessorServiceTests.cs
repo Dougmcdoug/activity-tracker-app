@@ -53,8 +53,8 @@ namespace RunningTrackerTests.GpxTests
 
             var elevation = processor.CalculateTotalElevation(points);
 
-            Assert.True(elevation > 200);
-            Assert.True(elevation < 300);
+            Assert.True(elevation > 250);
+            Assert.True(elevation < 350);
         }
     }
 }

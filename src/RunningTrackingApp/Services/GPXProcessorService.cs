@@ -56,9 +56,51 @@ namespace RunningTrackingApp.Services
 
         public double CalculateTotalElevation(List<TrackPoint> points)
         {
-            // Perform smoothing?
+            // Perform smoothing
+            var smoothedPoints = PerformSmoothing(points);
+
+            // Get a list of the elevation values from the smoothed points
+            var elevations = GetElevation(smoothedPoints);
+
+            // Iterate through points to determine elevation change
+            double totalElevationGain = 0;
+            double totalElevationLoss = 0;
+            for (int i = 0; i < elevations.Count - 1; i++)
+            {
+                var elevationChange = elevations[i + 1] - elevations[i];
+
+                // If elevation changes by less than 10cm, we can discount it as noise
+                if (elevationChange >= 0.1)
+                {
+                    totalElevationGain += elevationChange;
+                }
+                else if (elevationChange <= -0.1)
+                {
+                    totalElevationLoss -= elevationChange;
+                }
+            }
+
+
+            return totalElevationGain;
+        }
+
+
+        /// <summary>
+        /// Perform smoothing on a list of TrackPoints using a 3D Kalman filter.
+        /// This is definitely overkill for this application, a moving average filter on the elevation would likely
+        /// be sufficient but it provided a good opportunity to have a go at implementing this filter!
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        private List<TrackPoint> PerformSmoothing(List<TrackPoint> points)
+        {
+            // Initialise list
             var smoothedPoints = new List<TrackPoint>();
+
+            // Initialise the filter
             var kalman = new KalmanFilter3D(points[0].Latitude, points[0].Longitude, (double)points[0].Elevation);
+
+            // Iterate through points and smooth them by updating and retrieving the state of the filter
             foreach (var point in points)
             {
                 kalman.Update(point.Latitude, point.Longitude, (double)point.Elevation);
@@ -67,34 +109,8 @@ namespace RunningTrackingApp.Services
 
             }
 
-            var elevations = GetElevation(smoothedPoints);
-
-            // Iterate through points to determine elevation
-            double totalElevationGain = 0;
-            double totalElevationLoss = 0;
-            for (int i = 0; i < smoothedPoints.Count - 1; i++)
-            {
-                var elevationChange = (double)smoothedPoints[i + 1].Elevation - (double)smoothedPoints[i].Elevation;
-                if (elevationChange >= 0)
-                {
-                    totalElevationGain += elevationChange;
-                }
-                else
-                {
-                    totalElevationLoss -= elevationChange;
-                }
-
-            }
-            /*
-            foreach (var pt in smoothedPoints)
-            {
-                totalElevation += (double)pt.Elevation;
-            }*/
-
-
-            return totalElevationGain;
+            return smoothedPoints;
         }
-
         
     }
 

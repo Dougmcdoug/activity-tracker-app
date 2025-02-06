@@ -80,7 +80,6 @@ namespace RunningTrackingApp.Services
                 }
             }
 
-
             return totalElevationGain;
         }
 

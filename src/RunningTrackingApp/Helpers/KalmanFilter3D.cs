@@ -26,7 +26,14 @@ namespace RunningTrackingApp.Helpers
         private readonly Matrix<double> measurementNoise;
 
 
-       
+       /// <summary>
+       /// Initialise the filter, passing in the initial state and creating the required matrices.
+       /// Time step is assumed to be 1 second if not supplied.
+       /// </summary>
+       /// <param name="initialX"></param>
+       /// <param name="initialY"></param>
+       /// <param name="initialZ"></param>
+       /// <param name="dt"></param>
         public KalmanFilter3D(double initialX, double initialY, double initialZ, double dt = 1)
         {
             // Define the initial state vector: [x, y, z, vx, vy, vz, ax, ay, az] (Assume zero initial velocity and acceleration)

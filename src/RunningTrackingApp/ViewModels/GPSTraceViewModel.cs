@@ -136,5 +136,7 @@ namespace RunningTrackingApp.ViewModels
             // Delay is required to ensure that the map has loaded before attempting to zoom
             _mapService.FocusOnPoint(centre, resolution);
         }
+
+
     }
 }

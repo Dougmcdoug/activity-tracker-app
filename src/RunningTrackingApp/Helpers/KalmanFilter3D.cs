@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RunningTrackingApp.Interfaces;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Double;
 
@@ -15,9 +16,9 @@ namespace RunningTrackingApp.Helpers
     /// extended to 3 dimensions and non-constant velocity.
     /// Note that the constant acceleration model may not be optimum, so further testing required.
     /// </summary>
-    public class KalmanFilter3D
+    public class KalmanFilter3D : IGpsFilter
     {
-        private Matrix<double> state; // [x, y, z, vx, vy, vz]
+        private Matrix<double> state; // [x, y, z, vx, vy, vz, ax, ay, az]
         private Matrix<double> covariance;
         private readonly Matrix<double> transition;
         private readonly Matrix<double> observation;

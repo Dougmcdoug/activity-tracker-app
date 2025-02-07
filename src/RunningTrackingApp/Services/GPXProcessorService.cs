@@ -1,5 +1,6 @@
 ﻿using NetTopologySuite.Algorithm;
 using NetTopologySuite.Geometries;
+using RunningTrackingApp.Interfaces;
 using RunningTrackingApp.Helpers;
 using RunningTrackingApp.Models;
 using System;
@@ -42,7 +43,12 @@ namespace RunningTrackingApp.Services
             return totalDistance;
         }
 
-
+        /// <summary>
+        /// Retrieve a list of elevation values from a list of TrackPoints.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         private List<double> GetElevation(List<TrackPoint> points)
         {
             // Check that elevation is not null
@@ -53,7 +59,11 @@ namespace RunningTrackingApp.Services
             return elevation;
         }
 
-
+        /// <summary>
+        /// Calculate the total elevation gain from a list of TrackPoints.
+        /// </summary>
+        /// <param name="points"></param>
+        /// <returns></returns>
         public double CalculateTotalElevation(List<TrackPoint> points)
         {
             // Perform smoothing
@@ -85,26 +95,28 @@ namespace RunningTrackingApp.Services
 
 
         /// <summary>
-        /// Perform smoothing on a list of TrackPoints using a 3D Kalman filter.
-        /// This is definitely overkill for this application, a moving average filter on the elevation would likely
+        /// Perform smoothing on a list of TrackPoints.
+        /// The 3D Kalman filter is definitely overkill for this application, a moving average filter on the elevation would likely
         /// be sufficient but it provided a good opportunity to have a go at implementing this filter!
         /// </summary>
         /// <param name="points"></param>
         /// <returns></returns>
-        private List<TrackPoint> PerformSmoothing(List<TrackPoint> points)
+        public List<TrackPoint> PerformSmoothing(List<TrackPoint> points)
         {
             // Initialise list
             var smoothedPoints = new List<TrackPoint>();
 
             // Initialise the filter
-            var kalman = new KalmanFilter3D(points[0].Latitude, points[0].Longitude, (double)points[0].Elevation);
+            // Could swap in other filter types here, such as a simpler moving average filter.
+            // Could do this by the choice in a UI drop-down list in a settings menu?
+            IGpsFilter filter = new KalmanFilter3D(points[0].Latitude, points[0].Longitude, (double)points[0].Elevation);
 
             // Iterate through points and smooth them by updating and retrieving the state of the filter
             foreach (var point in points)
             {
-                kalman.Update(point.Latitude, point.Longitude, (double)point.Elevation);
-                var smoothed = kalman.GetState();
-                smoothedPoints.Add(new TrackPoint { Longitude = smoothed.x, Latitude = smoothed.y, Elevation = smoothed.z });
+                filter.Update(point.Latitude, point.Longitude, (double)point.Elevation);
+                var smoothed = filter.GetState();
+                smoothedPoints.Add(new TrackPoint { Latitude = smoothed.x, Longitude = smoothed.y, Elevation = smoothed.z });
 
             }
 

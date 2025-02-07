@@ -24,9 +24,11 @@ namespace RunningTrackingApp.ViewModels
     {
         public string FilePath { get; private set; }
         private GPXParserService _parserService;
+        private GPXProcessorService _processorService;
         private MapService _mapService;
         private List<TrackPoint> _points;
         private Coordinate[] _coordinates;
+        private List<TrackPoint> _smoothedPoints;
 
         private Map _map;
         public Map Map
@@ -47,9 +49,10 @@ namespace RunningTrackingApp.ViewModels
         /// </summary>
         /// <param name="parserService"></param>
         /// <param name="mapService"></param>
-        public GPSTraceViewModel(GPXParserService parserService, MapService mapService)
+        public GPSTraceViewModel(GPXParserService parserService, GPXProcessorService processorService, MapService mapService)
         {
             _parserService = parserService; 
+            _processorService = processorService;
             _mapService = mapService;
 
             Map = _mapService.Map;
@@ -74,6 +77,7 @@ namespace RunningTrackingApp.ViewModels
                 catch (ArgumentException ex)
                 {
                     // Ignore exception, map will proceed to draw map without gps trace
+                    // Could add a dialog box warning the user no gpx file was selected
                 }
             }
         }
@@ -85,14 +89,18 @@ namespace RunningTrackingApp.ViewModels
         /// <param name="filePath">Absolute filepath to a valid .gpx file.</param>
         public void LoadGPXTrack(string filePath)
         {
+            
             // Load GPS points
             GPXData = _parserService.ParseGpxFile(filePath);
 
             // 'Flatten' the gps points into a list
             _points = _parserService.ExtractTrackPoints(GPXData);
 
+            // Smooth data points
+            _smoothedPoints = _processorService.PerformSmoothing(_points);
+
             // Convert lon/lat coordinates to x,y
-            _coordinates = _mapService.GetCoordinateArray(_points);
+            _coordinates = _mapService.GetCoordinateArray(_smoothedPoints);
 
             // Update the map with the new GPS track
             _mapService.UpdateGpsLayer(_coordinates);
